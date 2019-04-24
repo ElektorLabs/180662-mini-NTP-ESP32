@@ -1,4 +1,4 @@
-# 180622 mini NTP with ESP32
+# 180662 mini NTP with ESP32
 
 Code for the GPS based NTP with ESP32. This software uses a Wemos LoLin ESP32 OLED as base.
 The OLED used is a SSD1307 based one attached to the i²C Bus. This board can be purchased 
