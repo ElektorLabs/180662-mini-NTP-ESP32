@@ -171,6 +171,8 @@ void sendData(String data) {
   server->send(200, "text/plain", data);
 }
 
+void sendData(char* Data);
+
 /**************************************************************************************************
  *    Function      : initWiFi
  *    Description   : initializes the WiFi

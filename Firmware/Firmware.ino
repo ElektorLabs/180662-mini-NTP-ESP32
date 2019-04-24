@@ -32,7 +32,7 @@
 
 #include <U8g2lib.h>
 
-
+#include "websocket_if.h"
 #include "ArduinoJson.h"
 #include "timecore.h"
 #include "datastore.h"
@@ -195,7 +195,7 @@ void setup()
     /* We can run without rtc */
     Serial.println("RTC is Missing");
   }
-  
+  ws_service_begin();
   /* Last step is to get the NTP running */
   NTPServer.begin(123 , GetUTCTime );
   /* Now we start with the config for the Timekeeping and sync */
@@ -324,7 +324,7 @@ void loop()
 {  
   /* Process all networkservices */
   NetworkTask();
- 
+  ws_task();
   /* timeupdate done here is here */
   while (hws.available()){
       gps.encode(hws.read());
@@ -466,7 +466,7 @@ void Display_Task( void* param ){
         oled_ptr->sendBuffer();
         xSemaphoreGive(xi2cmtx);
       }
-
+      /* We also make the image accessable from web
 
       /* on the other side we draw the gps location if we have one and also the local time */
       /* Display boot splsh to the oled */
