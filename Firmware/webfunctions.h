@@ -100,4 +100,22 @@ void send_display_settings( void );
 **************************************************************************************************/ 
 void getGPS_Location( void );
 
+/**************************************************************************************************
+*    Function      : getipv4settings_settings
+*    Description   : Sets the ipv4 settings via json 
+*    Input         : non
+*    Output        : none
+*    Remarks       : none
+**************************************************************************************************/ 
+void update_ipv4_settings( void );
+
+/**************************************************************************************************
+*    Function      : getipv4settings_settings
+*    Description   : Sends the ipv4 settings as json 
+*    Input         : non
+*    Output        : none
+*    Remarks       : none
+**************************************************************************************************/ 
+void getipv4settings_settings( void );
+
 #endif

@@ -14,6 +14,7 @@
             <a class="menuBtn" id="MainPageBtn" href="javascript:showMainPage()">Main page</a>
             <a class="menuBtn" id="NotesBtn" href="javascript:showNotes()">Notes</a>
             <a class="menuBtn" id="TimeSettingsBtn" href="javascript:showTimeSettings()">Time settings</a>
+            <a class="menuBtn" id="TimeSettingsBtn" href="javascript:showIPv4Settings()">IPv4 settings</a>
             <a class="menuBtn" id="WiFiSettingsBtn" href="javascript:showWiFiSettings()">WiFi settings</a>
 			<a class="menuBtn" id="restartBtn" href="javascript:restart()">Restart</a>
 		</div>
@@ -48,6 +49,78 @@
                       
                 
             </div>
+            
+             <div id="IPv4Settings" class="views grid">
+        
+                <H1><label style="/*! margin-left:50%; */display: block;text-align: center;">Elektor NTP Server</label></H1><br>
+                 <table>
+						<thead>
+							<tr>
+								<th colspan="2">IPv4 Settings</th>
+							</tr>
+						</thead>
+                      
+						<tbody>
+                        
+							<tr>
+                            <td></td><td>
+                             
+                                <input type="checkbox" id="STATIC_IP" name="STATIC_IP" value="false">Use static IPv4<br> 
+                            </td></tr>
+                            
+                               <tr>
+                                <td>
+                                IP</td><td> 
+                                <input type="number" min="0" max="255" id="IP_0" name="IP_0" value="192">.
+                                <input type="number" min="0" max="255" id="IP_1" name="IP_1" value="168">.
+                                <input type="number" min="0" max="255" id="IP_2" name="IP_2" value="0">.
+                                <input type="number" min="0" max="255" id="IP_3" name="IP_3" value="1"><br> 
+                                </td></tr>
+                                <tr>
+                                <td>Subnet</td><td>
+                                <input type="number" min="0" max="255" id="SUB_0" name="SUB_0" value="255">.
+                                <input type="number" min="0" max="255" id="SUB_1" name="SUB_1" value="255">.
+                                <input type="number" min="0" max="255" id="SUB_2" name="SUB_2" value="255">.
+                                <input type="number" min="0" max="255" id="SUB_3" name="SUB_3" value="0"><br> 
+                                </td>
+                                </tr>
+                                <tr>
+                                <td>Gateway</td><td>
+                                <input type="number" min="0" max="255" id="GW_0" name="GW_0" value="192">.
+                                <input type="number" min="0" max="255" id="GW_1" name="GW_1" value="168">.
+                                <input type="number" min="0" max="255" id="GW_2" name="GW_2" value="0">.
+                                <input type="number" min="0" max="255" id="GW_3" name="GW_3" value="1"><br> 
+                                </td></tr>
+                                
+                                <tr><td>
+                                DNS 0</td><td> 
+                                <input type="number" min="0" max="255" id="DNS0_0" name="DNS0_0" value="0">.
+                                <input type="number" min="0" max="255" id="DNS0_1" name="DNS0_1" value="0">.
+                                <input type="number" min="0" max="255" id="DNS0_2" name="DNS0_2" value="0">.
+                                <input type="number" min="0" max="255" id="DNS0_3" name="DNS0_3" value="0"><br> 
+                                </td></tr>
+                                <td>DNS 1</td><td>
+                                <input type="number" min="0" max="255" id="DNS1_0" name="DNS1_0" value="0">.
+                                <input type="number" min="0" max="255" id="DNS1_1" name="DNS1_1" value="0">.
+                                <input type="number" min="0" max="255" id="DNS1_2" name="DNS1_2" value="0">.
+                                <input type="number" min="0" max="255" id="DNS1_3" name="DNS1_3" value="0"><br> 
+                                </td></tr>
+                                 <tr><td></td><td>
+                                    <button type="button" onclick="SubmitIPv4Settings(); return false;">Submit</button>
+                                     </td></tr>
+                              
+                             
+                             
+                        </tbody>
+                         
+                            
+                </table>
+                
+                 
+                      
+                
+            </div>
+                        
                         
 			<div id="TimeSettings" class="views grid">
                     <table>
@@ -650,6 +723,10 @@
             showView("TimeSettings");
         }
 		
+        function showIPv4Settings(){
+            sendRequest("ipv4settings.json", read_ipv4settings);
+            showView("IPv4Settings");
+        }
        
         
         function read_timesettings(msg){
@@ -923,6 +1000,102 @@
              
 
             
+        
+        }
+        
+        
+        function read_ipv4settings( msg){
+        
+            var jsonObj = JSON.parse(msg);
+            
+            document.getElementById("STATIC_IP").checked = jsonObj.USE_STATIC;
+            document.getElementById("IP_0").value = jsonObj.IP[0];
+            document.getElementById("IP_1").value = jsonObj.IP[1];
+            document.getElementById("IP_2").value = jsonObj.IP[2];
+            document.getElementById("IP_3").value = jsonObj.IP[3];
+
+            document.getElementById("SUB_0").value = jsonObj.SUBNET[0];
+            document.getElementById("SUB_1").value = jsonObj.SUBNET[1];
+            document.getElementById("SUB_2").value = jsonObj.SUBNET[2];
+            document.getElementById("SUB_3").value = jsonObj.SUBNET[3];
+
+            document.getElementById("GW_0").value = jsonObj.GATEWAY[0];
+            document.getElementById("GW_1").value = jsonObj.GATEWAY[1];
+            document.getElementById("GW_2").value = jsonObj.GATEWAY[2];
+            document.getElementById("GW_3").value = jsonObj.GATEWAY[3];
+           
+            document.getElementById("DNS0_0").value = jsonObj.DNS0[0];
+            document.getElementById("DNS0_1").value = jsonObj.DNS0[1];
+            document.getElementById("DNS0_2").value = jsonObj.DNS0[2];
+            document.getElementById("DNS0_3").value = jsonObj.DNS0[3];            
+
+            document.getElementById("DNS1_0").value = jsonObj.DNS1[0];
+            document.getElementById("DNS1_1").value = jsonObj.DNS1[1];
+            document.getElementById("DNS1_2").value = jsonObj.DNS1[2];
+            document.getElementById("DNS1_3").value = jsonObj.DNS1[3];   
+            
+        
+        }
+        
+        
+          function SubmitIPv4Settings(){
+            var protocol = location.protocol;
+            var slashes = protocol.concat("//");
+            var host = slashes.concat(window.location.hostname);
+            var url = host + "/ipv4settings.json";
+            
+            var data = [];
+            
+            var use_static = document.getElementById("STATIC_IP").checked;
+            
+            var ip = [];
+            
+            ip.push(document.getElementById("IP_0").value );
+            ip.push(document.getElementById("IP_1").value );
+            ip.push(document.getElementById("IP_2").value );
+            ip.push(document.getElementById("IP_3").value );
+
+            var sub = [];
+            
+            sub.push( document.getElementById("SUB_0").value );
+            sub.push( document.getElementById("SUB_1").value );
+            sub.push( document.getElementById("SUB_2").value );
+            sub.push(  document.getElementById("SUB_3").value );
+
+            var gw = [];
+            gw.push( document.getElementById("GW_0").value );
+            gw.push( document.getElementById("GW_1").value );
+            gw.push( document.getElementById("GW_2").value );
+            gw.push( document.getElementById("GW_3").value );
+           
+            var dns0 = [];
+            
+            dns0.push( document.getElementById("DNS0_0").value );
+            dns0.push( document.getElementById("DNS0_1").value );
+            dns0.push( document.getElementById("DNS0_2").value );
+            dns0.push( document.getElementById("DNS0_3").value );         
+
+            var dns1 = [];
+            
+            dns1.push( document.getElementById("DNS1_0").value );
+            dns1.push( document.getElementById("DNS1_1").value );
+            dns1.push( document.getElementById("DNS1_2").value );
+            dns1.push( document.getElementById("DNS1_3").value ); 
+            
+            var obj = {};
+            obj["USE_STATIC"]=use_static;
+            obj["IP"]=(ip);
+            obj["SUBNET"]=(sub);
+            obj["GATEWAY"]=(gw);
+            obj["DNS0"]=(dns0);
+            obj["DNS1"]=(dns1);
+         
+            
+            data.push({key:"JSON",
+                       value: JSON.stringify(obj)  });
+            
+            sendData(url,data); 
+        
         
         }
         

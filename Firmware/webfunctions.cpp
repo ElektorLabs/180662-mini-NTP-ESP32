@@ -247,6 +247,56 @@ void read_notes(){
 }
 
 
+/**************************************************************************************************
+*    Function      : getipv4settings_settings
+*    Description   : Sends the ipv4 settings as json 
+*    Input         : non
+*    Output        : none
+*    Remarks       : none
+**************************************************************************************************/ 
+void getipv4settings_settings(){
+StaticJsonDocument<2048> doc;
+String response="";  
+
+ipv4_settings s = read_ipv4_settings();
+  
+  doc["USE_STATIC"] = s.use_static;
+
+  JsonArray IP = doc.createNestedArray("IP");
+  IP.add(  (uint8_t)( ( s.address >> 0) & 0xFF) );
+  IP.add(  (uint8_t)( ( s.address >> 8) & 0xFF) );
+  IP.add(  (uint8_t)( ( s.address >> 16) & 0xFF) );
+  IP.add(  (uint8_t)( ( s.address >> 24) & 0xFF) );
+  
+  JsonArray SUBNET = doc.createNestedArray("SUBNET");
+  SUBNET.add( (uint8_t)( ( s.subnet >> 0) & 0xFF));
+  SUBNET.add( (uint8_t)( ( s.subnet >> 8) & 0xFF));
+  SUBNET.add( (uint8_t)( ( s.subnet >> 16) & 0xFF));
+  SUBNET.add( (uint8_t)( ( s.subnet >> 24) & 0xFF));
+  
+  JsonArray GATEWAY = doc.createNestedArray("GATEWAY");
+  GATEWAY.add( (uint8_t)( ( s.gateway >> 0) & 0xFF));
+  GATEWAY.add( (uint8_t)( ( s.gateway >> 8) & 0xFF));
+  GATEWAY.add( (uint8_t)( ( s.gateway >> 16) & 0xFF));
+  GATEWAY.add( (uint8_t)( ( s.gateway >> 24) & 0xFF));
+  
+  JsonArray DNS0 = doc.createNestedArray("DNS0");
+  DNS0.add( (uint8_t)( ( s.dns0 >> 0) & 0xFF));
+  DNS0.add( (uint8_t)( ( s.dns0 >> 8) & 0xFF));
+  DNS0.add( (uint8_t)( ( s.dns0 >> 16) & 0xFF));
+  DNS0.add( (uint8_t)( ( s.dns0 >> 24) & 0xFF));
+  
+  JsonArray DNS1 = doc.createNestedArray("DNS1");
+  DNS1.add( (uint8_t)( ( s.dns1 >> 0) & 0xFF));
+  DNS1.add( (uint8_t)( ( s.dns1 >> 8) & 0xFF));
+  DNS1.add( (uint8_t)( ( s.dns1 >> 16) & 0xFF));
+  DNS1.add( (uint8_t)( ( s.dns1 >> 24) & 0xFF));
+  serializeJson(doc, response);
+  sendData(response);
+}
+
+
+
 
 /**************************************************************************************************
 *    Function      : getGPS_Location
@@ -324,6 +374,110 @@ void update_display_settings( void ){
 
 }
 
+
+void update_ipv4_settings( void ){
+  ipv4_settings s = read_ipv4_settings();
+  Serial.println("New IPv4 Settings");
+  if( ! server->hasArg("JSON") || server->arg("JSON") == NULL ) { // If the POST request doesn't have username and password data
+      /* we are missing something here */
+      Serial.println("JSON Print missing");
+  } else {
+    
+
+
+
+ if(server->arg("JSON").length() < 2048 ){ /* we only process messages up to 2048 elements */
+  DynamicJsonDocument doc(2048);
+ 
+  if(0 != deserializeJson(doc, server->arg("JSON" ) ) ){
+    Serial.println("JSON deserilize failed");
+    server->send(200);  
+    return;
+  }
+   
+    bool USE_STATIC = doc["USE_STATIC"];
+    s.use_static = USE_STATIC;
+    Serial.print("Static Mode=");
+    Serial.println(USE_STATIC);
+    
+    JsonArray  IP = doc["IP"];
+    if( (IP.isNull() != true)  ){
+      uint8_t IP_0 = IP[0]; // 192
+      uint8_t IP_1 = IP[1]; // 168
+      uint8_t IP_2 = IP[2]; // 0
+      uint8_t IP_3 = IP[3]; // 1
+      uint32_t addr = ( IP_0 << 0 ) | ( IP_1 << 8 ) | ( IP_2 << 16 ) | ( IP_3 << 24 ) ;
+      IPAddress IP_ADR(addr);
+      Serial.print("New IP:");
+      Serial.println(IP_ADR);
+      s.address = addr;
+    }
+      
+    
+
+    JsonArray  SUBNET = doc["SUBNET"];
+    if( (SUBNET.isNull() != true)  ){
+      uint8_t SUBNET_0 = SUBNET[0]; // 255
+      uint8_t SUBNET_1 = SUBNET[1]; // 255
+      uint8_t SUBNET_2 = SUBNET[2]; // 255
+      uint8_t SUBNET_3 = SUBNET[3]; // 0
+      uint32_t subnet = ( SUBNET_0 << 0 ) | ( SUBNET_1 << 8 ) | ( SUBNET_2 << 16 ) | ( SUBNET_3 << 24 ) ;
+      IPAddress SUBNET_ADR(subnet);
+      Serial.print("New SUBNET:");
+      Serial.println(SUBNET_ADR);
+      s.subnet = subnet;
+    }
+
+    JsonArray  GATEWAY = doc["GATEWAY"];
+    if( (GATEWAY.isNull() != true)  ){
+      uint8_t GATEWAY_0 = GATEWAY[0]; // 192
+      uint8_t GATEWAY_1 = GATEWAY[1]; // 168
+      uint8_t GATEWAY_2 = GATEWAY[2]; // 0
+      uint8_t GATEWAY_3 = GATEWAY[3]; // 1  
+      uint32_t gateway = ( GATEWAY_0 << 0 ) | ( GATEWAY_1 << 8 ) | ( GATEWAY_2 << 16 ) | ( GATEWAY_3 << 24 ) ;
+      IPAddress GATEWAY_ADR(gateway);
+      Serial.print("New GATEWAY:");
+      Serial.println(GATEWAY_ADR);
+      s.gateway = gateway;
+    }
+
+    JsonArray  DNS0 = doc["DNS0"];
+    if( (DNS0.isNull() != true)  ){
+      uint8_t DNS0_0 = DNS0[0]; // 192
+      uint8_t DNS0_1 = DNS0[1]; // 168
+      uint8_t DNS0_2 = DNS0[2]; // 0
+      uint8_t DNS0_3 = DNS0[3]; // 1  
+      uint32_t dns0 = ( DNS0_0 << 0 ) | ( DNS0_1 << 8 ) | ( DNS0_2 << 16 ) | ( DNS0_3 << 24 ) ;
+      IPAddress DNS_ADR(dns0);
+      Serial.print("New DNS0:");
+      Serial.println(DNS_ADR);
+      s.dns0 = dns0;
+    }
+
+    JsonArray  DNS1 = doc["DNS1"];
+    if( (DNS1.isNull() != true) ){
+    
+      uint8_t DNS1_0 = DNS1[0]; // 192
+      uint8_t DNS1_1 = DNS1[1]; // 168
+      uint8_t DNS1_2 = DNS1[2]; // 0
+      uint8_t DNS1_3 = DNS1[3]; // 1
+      uint32_t dns1 = ( DNS1_0 << 0 ) | ( DNS1_1 << 8 ) | ( DNS1_2 << 16 ) | ( DNS1_3 << 24 ) ;  
+      IPAddress DNS_ADR(dns1);
+      s.dns1 = dns1;          
+      Serial.print("New DNS1:");
+      Serial.println(DNS_ADR);
+    }
+  
+  }else {
+    Serial.println("JSON to long");
+  }
+
+  // We print the new settings and save them
+  write_ipv4_settings(s);
+  } 
+  server->send(200);  
+  
+}
 /**************************************************************************************************
 *    Function      : send_display_settings
 *    Description   : set or unset form web if the display will be swapped
@@ -342,6 +496,3 @@ void send_display_settings( void ){
   sendData(response);
 
 }
-
-
-

@@ -6,6 +6,7 @@
  *  GPS Receiver ( https://www.elektor.com/open-smart-gps-serial-gps-module-for-arduino-apm2-5-flight-control )
  *  DS3231 bases I²C RTC Module, e.g those used for the Pi
  * 
+ * 
  * Librarys requierd:
  *  
  *  U8G2 by oliver
@@ -15,6 +16,9 @@
  *  RTCLib by Adafruit
  *  ArduinoJson 6.10.0
  *  CRC32 by Christopher Baker
+ *  
+ *  Version 1.1
+ *  - Added static ip config
  *  
  */
 
@@ -369,6 +373,7 @@ void Display_Task( void* param ){
   char gps_lng_str[16]={0,};
   char datestr[16]={0,};
   char loc_datestr[16]={0,};
+  bool btn_pressed = digitalRead( 0 );
 
 
   display_settings_t displayconfig = read_display_config();
@@ -420,6 +425,16 @@ void Display_Task( void* param ){
   
   /* clear the screen and draw the time */
   while(1==1){
+    if( (digitalRead( 0 ) == false) && ( true == btn_pressed ) ) {
+      //Btn is pressed if last time we had a true than we swap display
+      displayconfig = read_display_config();
+      displayconfig.swap_display = !displayconfig.swap_display;
+      write_display_config( displayconfig);
+      btn_pressed = false;
+    } else {
+      btn_pressed = digitalRead( 0 );
+    }
+    
     if( xSemaphoreTake( xSemaphore, portMAX_DELAY  ) == pdTRUE )
     {
       displayconfig = read_display_config();
@@ -567,5 +582,3 @@ void RTC_WriteUnixTimestamp( uint32_t ts){
 
 
  
-
-

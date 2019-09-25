@@ -9,6 +9,15 @@ typedef struct {
 } credentials_t;
 /* 256 byte */
 
+typedef struct {
+  bool use_static;
+  uint32_t address;
+  uint32_t subnet;
+  uint32_t gateway;
+  uint32_t dns0;
+  uint32_t dns1;
+} ipv4_settings;
+
 typedef struct{
   bool sync_on_gps;
 }gps_settings_t;
@@ -101,6 +110,24 @@ void write_credentials(credentials_t c);
  *    Remarks       : none
  **************************************************************************************************/
 credentials_t read_credentials( void );
+
+/**************************************************************************************************
+ *    Function      : write_credentials
+ *    Description   : writes the wifi ipv4 settings
+ *    Input         : ipv4_settings
+ *    Output        : none
+ *    Remarks       : none
+ **************************************************************************************************/
+void write_ipv4_settings(ipv4_settings c);
+
+/**************************************************************************************************
+ *    Function      : read_credentials
+ *    Description   : reads the ipv4 settings
+ *    Input         : none
+ *    Output        : ipv4_settings
+ *    Remarks       : none
+ **************************************************************************************************/
+ipv4_settings read_ipv4_settings( void );
 
 /**************************************************************************************************
  *    Function      : eepwrite_notes

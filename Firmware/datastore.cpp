@@ -18,6 +18,8 @@ bool eepread_struct( void* element, uint32_t e_size, uint32_t startaddr  );
 
 #define DISPLAYCONFIG_START 400
 
+#define IPV4SETTINGS_START  420
+
 #define NOTES_START 500
 /* notes take 512 byte */
 
@@ -151,7 +153,34 @@ credentials_t read_credentials( void ){
   return retval;
 }
 
+/**************************************************************************************************
+ *    Function      : write_credentials
+ *    Description   : writes the wifi ipv4 settings
+ *    Input         : ipv4_settings
+ *    Output        : none
+ *    Remarks       : none
+ **************************************************************************************************/
+void write_ipv4_settings(ipv4_settings c){
+  eepwrite_struct( ( (void*)(&c) ), sizeof(ipv4_settings) , IPV4SETTINGS_START );
+}
 
+
+/**************************************************************************************************
+ *    Function      : read_credentials
+ *    Description   : reads the ipv4 settings
+ *    Input         : none
+ *    Output        : ipv4_settings
+ *    Remarks       : none
+ **************************************************************************************************/
+ipv4_settings read_ipv4_settings( void ){
+  ipv4_settings retval;
+  if(false == eepread_struct( (void*)(&retval), sizeof(ipv4_settings) , IPV4SETTINGS_START ) ){ 
+    Serial.println("WIFI IPv4");
+    bzero((void*)&retval,sizeof( ipv4_settings ));
+    write_ipv4_settings(retval);
+  }
+  return retval;
+}
 
 /**************************************************************************************************
  *    Function      : eepread_struct
@@ -274,9 +303,3 @@ void erase_eeprom( void ){
   EEPROM.commit();
  
 }
-
-
-
-
-
-

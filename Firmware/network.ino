@@ -212,7 +212,8 @@ credentials_t c =  read_credentials();
  *    Remarks       : connect the esp to a wifi network, retuns false if failed
  **************************************************************************************************/
 bool connectWiFi() {
-  
+  ipv4_settings nws;
+  nws= read_ipv4_settings();
 
   if (ssid == "") {
     Serial.println("SSID unknown");
@@ -221,6 +222,18 @@ bool connectWiFi() {
   }
   WiFi.mode(WIFI_STA);
   Serial.println("Attempting to connect to " + ssid + ", pass: " + pass);
+  if(false != nws.use_static ){
+    IPAddress local_IP(nws.address);
+    IPAddress gateway(nws.gateway);
+    IPAddress subnet(nws.subnet);
+    IPAddress primaryDNS(nws.dns0); //optional
+    IPAddress secondaryDNS(nws.dns1); //optional
+    if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
+      Serial.println("STA Failed to configure");
+    }
+
+   
+  }
   
   WiFi.begin(( char*)ssid.c_str(), ( char*)pass.c_str());
   for (int timeout = 0; timeout < 15; timeout++) { //max 15 seconds
@@ -276,7 +289,6 @@ void configureSoftAP() {
   
   WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
   WiFi.softAP(APSSID.c_str(), NULL, 1, 0, 1);
-  ip = WiFi.softAPIP();
   Serial.print("AP IP: ");
   Serial.println(ip);
   
@@ -285,6 +297,7 @@ void configureSoftAP() {
   }
   Serial.println("mDNS responder started");
   configureServer();
+  ip = WiFi.softAPIP();
 }
 
 /**************************************************************************************************
@@ -310,7 +323,8 @@ void configureServer() {
   server->on("/gps/data",HTTP_GET,getGPS_Location);
   server->on("/display/settings",HTTP_GET,send_display_settings);
   server->on("/display/settings",HTTP_POST,update_display_settings);  
-  
+  server->on("/ipv4settings.json",HTTP_GET,getipv4settings_settings);
+  server->on("/ipv4settings.json",HTTP_POST,update_ipv4_settings);
   server->onNotFound(sendFile); //handle everything except the above things
   server->begin();
   Serial.println("Webserver started");
