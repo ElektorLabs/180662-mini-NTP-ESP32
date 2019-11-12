@@ -86,7 +86,7 @@ bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) ){
   
     if(udp.listen(port)) {
         started=true;
-        udp.onPacket([](AsyncUDPPacket packet) {
+         udp.onPacket([](AsyncUDPPacket packet) {
            uint32_t processing_start = 0;
            ntp_packet_t ntp_req;
            
@@ -111,8 +111,8 @@ bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) ){
           ntp_req.refTm_s = ntohl(ntp_req.refTm_s );      
           ntp_req.refTm_f = ntohl(ntp_req.refTm_f  );      
          
-          ntp_req.origTm_s = ntohl( ntp_req.origTm_s );      
-          ntp_req.origTm_f = ntohl( ntp_req.origTm_f );      
+          ntp_req.origTm_s = ntohl( ntp_req.txTm_s );      
+          ntp_req.origTm_f = ntohl( ntp_req.txTm_f );                
 
         
           ntp_req.rxTm_s = ntohl( ntp_req.rxTm_s );        
@@ -136,7 +136,8 @@ bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) ){
           ntp_req.rxTm_s= processing_start;
           ntp_req.rxTm_f= 0;
           /* UNIX Start is 1.1.1970 and GPS Start is 1.1.1900 */ 
-          ntp_req.refTm_s=  ntp_req.refTm_s +  NTP_TIMESTAMP_DELTA; // We need to add 70 Years
+          //ntp_req.refTm_s=  ntp_req.refTm_s +  NTP_TIMESTAMP_DELTA; // We need to add 70 Years
+          ntp_req.refTm_s = processing_start;
           ntp_req.refTm_f = 0;
           
           ntp_req.txTm_s = fnc_read_utc()+NTP_TIMESTAMP_DELTA;
