@@ -17,6 +17,11 @@
  *  ArduinoJson 6.10.0
  *  CRC32 by Christopher Baker
  *  
+ *  Version 1.2
+ *  - Fixed a bug making the NTP server now usable with linusx and windows systems
+ *    This patch is kindly provided by Karl-Heinz Lohner for Version 1.0 and has been
+ *    ported to Version 1.1
+ *
  *  Version 1.1
  *  - Added static ip config
  *  
