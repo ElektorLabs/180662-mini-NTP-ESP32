@@ -50,6 +50,11 @@
 
 #define  GPSBAUD ( 9600 )
 
+#define MAX_SRV_CLIENTS ( 5 )
+/* For GPS Module Debug */
+WiFiServer server(23);
+WiFiClient serverClients[MAX_SRV_CLIENTS];
+
 Timecore timec;
 
 
@@ -305,6 +310,9 @@ void _200mSecondTick( void ){
    
    pps_count_last=pps_counter;
    last_pps_state = pps_active;
+
+  server.begin();
+  server.setNoDelay(true);
    
 }
 
@@ -323,6 +331,79 @@ void decGPSTimeout( void ){
 
 
 /**************************************************************************************************
+ *    Function      : TelnetDebugService
+ *    Description   : Cares for new and old connections to keep them alive
+ *    Input         : none 
+ *    Output        : none
+ *    Remarks       : none
+ **************************************************************************************************/
+void TelnetDebugService( void )//This keeps the connections alive 
+{
+
+   if (server.hasClient()){
+      for(i = 0; i < MAX_SRV_CLIENTS; i++){
+        //find free/disconnected spot
+        if (!serverClients[i] || !serverClients[i].connected()){
+          if(serverClients[i]) serverClients[i].stop();
+          serverClients[i] = server.available();
+          if (!serverClients[i]) Serial.println("available broken");
+          Serial.print("New client: ");
+          Serial.print(i); Serial.print(' ');
+          Serial.println(serverClients[i].remoteIP());
+          break;
+        }
+      }
+      if (i >= MAX_SRV_CLIENTS) {
+        //no free/disconnected spot so reject
+        server.available().stop();
+      }
+    }
+
+    for(i = 0; i < MAX_SRV_CLIENTS; i++){
+      if (serverClients[i] && serverClients[i].connected()){
+        if(serverClients[i].available()){
+          //get data from the telnet client and flush it
+          serverClients[i].read());
+        }
+      }
+      else {
+        if (serverClients[i]) {
+          serverClients[i].stop();
+        }
+      }
+    }
+
+
+}
+
+
+/**************************************************************************************************
+ *    Function      : TelenetDebugServerTx
+ *    Description   : Will send one byte to teh conncted clients
+ *    Input         : none 
+ *    Output        : none
+ *    Remarks       : none
+ **************************************************************************************************/
+void TelenetDebugServerTx( int16_t Data ){
+      if(Data<0){
+        return;
+      }
+      //This is really inefficent but shall work 
+      uint8_t sbuf[1]=Data;
+      //push UART data to all connected telnet clients
+      for(i = 0; i < MAX_SRV_CLIENTS; i++){
+        if (serverClients[i] && serverClients[i].connected()){
+          serverClients[i].write(sbuf, 1);
+          delay(1); //?
+        }
+      }
+    }
+
+}
+
+
+
+/**************************************************************************************************
  *    Function      : loop
  *    Description   : Superloop
  *    Input         : none 
@@ -333,10 +414,12 @@ void loop()
 {  
   /* Process all networkservices */
   NetworkTask();
- 
+  TelnetDebugService();
   /* timeupdate done here is here */
   while (hws.available()){
-      gps.encode(hws.read());
+      int16_t Data = hws.read()
+      TelenetDebugServerTx(Data);
+      gps.encode(Data);
       /* We check here if we have a new timestamp, and a valid GPS position  */
       if( (gps.date.isValid()==true) && ( gps.time.isValid()==true) && ( gps.location.isValid() == true ) ) {
         if(gps.time.isUpdated()==true){   
