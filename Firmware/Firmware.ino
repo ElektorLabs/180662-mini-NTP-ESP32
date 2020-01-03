@@ -95,6 +95,7 @@ volatile uint32_t GPS_Timeout=0;
 volatile uint32_t pps_counter=0;
 bool pps_active = false;
 gps_settings_t gps_config;
+void Display_Task( void* param );
 
 /**************************************************************************************************
  *    Function      : GetUTCTime
