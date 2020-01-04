@@ -47,12 +47,13 @@
 #include "datastore.h"
 
 #include "ntp_server.h"
+#include "network.h"
 
 #define  GPSBAUD ( 9600 )
 
 #define MAX_SRV_CLIENTS ( 5 )
 /* For GPS Module Debug */
-WiFiServer server(23);
+WiFiServer TelnetServer(23);
 WiFiClient serverClients[MAX_SRV_CLIENTS];
 
 Timecore timec;
@@ -96,6 +97,8 @@ volatile uint32_t pps_counter=0;
 bool pps_active = false;
 gps_settings_t gps_config;
 void Display_Task( void* param );
+uint32_t RTC_ReadUnixTimeStamp(bool* delayed_result);
+void RTC_WriteUnixTimestamp( uint32_t ts);
 
 /**************************************************************************************************
  *    Function      : GetUTCTime
@@ -312,8 +315,8 @@ void _200mSecondTick( void ){
    pps_count_last=pps_counter;
    last_pps_state = pps_active;
 
-  server.begin();
-  server.setNoDelay(true);
+  TelnetServer.begin();
+  TelnetServer.setNoDelay(true);
    
 }
 
@@ -340,31 +343,31 @@ void decGPSTimeout( void ){
  **************************************************************************************************/
 void TelnetDebugService( void )//This keeps the connections alive 
 {
-
-   if (server.hasClient()){
-      for(i = 0; i < MAX_SRV_CLIENTS; i++){
+   uint8_t con =0;
+   if (TelnetServer.hasClient()){
+      for(con = 0; con < MAX_SRV_CLIENTS; con++){
         //find free/disconnected spot
-        if (!serverClients[i] || !serverClients[i].connected()){
-          if(serverClients[i]) serverClients[i].stop();
-          serverClients[i] = server.available();
-          if (!serverClients[i]) Serial.println("available broken");
+        if (!serverClients[con] || !serverClients[con].connected()){
+          if(serverClients[con]) serverClients[con].stop();
+          serverClients[con] = TelnetServer.available();
+          if (!serverClients[con]) Serial.println("available broken");
           Serial.print("New client: ");
-          Serial.print(i); Serial.print(' ');
-          Serial.println(serverClients[i].remoteIP());
+          Serial.print(con); Serial.print(' ');
+          Serial.println(serverClients[con].remoteIP());
           break;
         }
       }
-      if (i >= MAX_SRV_CLIENTS) {
+      if ( con >= MAX_SRV_CLIENTS) {
         //no free/disconnected spot so reject
-        server.available().stop();
+        TelnetServer.available().stop();
       }
     }
 
-    for(i = 0; i < MAX_SRV_CLIENTS; i++){
+    for(uint8_t i = 0; i < MAX_SRV_CLIENTS; i++){
       if (serverClients[i] && serverClients[i].connected()){
         if(serverClients[i].available()){
           //get data from the telnet client and flush it
-          serverClients[i].read());
+          serverClients[i].read();
         }
       }
       else {
@@ -390,18 +393,16 @@ void TelenetDebugServerTx( int16_t Data ){
         return;
       }
       //This is really inefficent but shall work 
-      uint8_t sbuf[1]=Data;
+      uint8_t sbuf[1];
+      sbuf[0] = Data;
       //push UART data to all connected telnet clients
-      for(i = 0; i < MAX_SRV_CLIENTS; i++){
+      for(uint8_t i = 0; i < MAX_SRV_CLIENTS; i++){
         if (serverClients[i] && serverClients[i].connected()){
           serverClients[i].write(sbuf, 1);
           delay(1); //?
         }
       }
-    }
-
 }
-
 
 
 /**************************************************************************************************
@@ -418,7 +419,7 @@ void loop()
   TelnetDebugService();
   /* timeupdate done here is here */
   while (hws.available()){
-      int16_t Data = hws.read()
+      int16_t Data = hws.read();
       TelenetDebugServerTx(Data);
       gps.encode(Data);
       /* We check here if we have a new timestamp, and a valid GPS position  */

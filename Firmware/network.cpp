@@ -3,7 +3,9 @@
 
 #include <WebServer.h>
 #include <ESPmDNS.h>        // Include the mDNS library
-
+#include <FS.h>
+#include <SPIFFS.h>
+#include "network.h"
 
 
 String APSSID = "Elektor NTP Server";
@@ -23,7 +25,7 @@ WebServer * server =NULL;
  *    Output        : String
  *    Remarks       : none
  **************************************************************************************************/
-String SSIDList(String separator = ",") {
+String SSIDList(String separator ) {
   Serial.println("Scanning networks");
   String ssidList;
   int n = WiFi.scanNetworks();
