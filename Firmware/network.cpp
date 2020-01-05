@@ -289,8 +289,14 @@ void configureSoftAP() {
   IsAP=true;
   Serial.println("Configuring AP: " + String(APSSID));
   
+  /* This seems to stop crashing the ESP32 if in SoftAP mode */
+  WiFi.enableAP(true);
+  delay(100);
   WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
   WiFi.softAP(APSSID.c_str(), NULL, 1, 0, 1);
+  delay(500); // Without delay the IP address is sometimes blank
+
+  
   Serial.print("AP IP: ");
   Serial.println(ip);
   

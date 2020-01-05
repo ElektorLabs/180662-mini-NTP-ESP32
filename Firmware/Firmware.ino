@@ -182,6 +182,8 @@ void setup()
    *  here, if we use it for sync or not
    *  
    */
+  TelnetServer.begin();
+  TelnetServer.setNoDelay(true);
   gps_config = read_gps_config();
   /* We reassign the I2C Pins to 4 and 5 with 100kHz */
   Wire.begin(5,4,100000);
@@ -313,11 +315,7 @@ void _200mSecondTick( void ){
    }
    
    pps_count_last=pps_counter;
-   last_pps_state = pps_active;
-
-  TelnetServer.begin();
-  TelnetServer.setNoDelay(true);
-   
+   last_pps_state = pps_active;   
 }
 
 /**************************************************************************************************
