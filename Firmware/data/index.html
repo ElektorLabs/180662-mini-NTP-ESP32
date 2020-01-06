@@ -879,7 +879,14 @@
            
             
             var element = document.getElementById("time");
+
             var t=element.value;
+            var parts = t.split(':');
+            //This will result in ideal conditions in three parts
+            if(parts.length < 3){
+                //We assume only hours and minutes here ( iphone style )
+                t=parts[0]+":"+parts[1]+":00";
+            }
             var data = [];
             data.push({key:"date",
                        value: d});
