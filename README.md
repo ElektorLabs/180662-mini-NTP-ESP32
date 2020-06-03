@@ -1,5 +1,22 @@
 # 180662 mini NTP with ESP32
 
+License: GPLv3
+###### 
+
+    Firmware for Elektorproject 180662 is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Firmware for Elektorproject 180662.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+
 Code for the GPS based NTP with ESP32. This software uses a Wemos LoLin ESP32 OLED as base.
 The OLED used is a SSD1307 based one attached to the i²C Bus. This board can be purchased 
 at ( https://www.elektor.com/wemos-lolin-esp32-oled-module-with-wifi ). As GPS receiver this one is used in the build ( https://www.elektor.com/open-smart-gps-serial-gps-module-for-arduino-apm2-5-flight-control )

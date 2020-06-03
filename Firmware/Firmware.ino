@@ -1,3 +1,21 @@
+/*
+    This file is part of Firmware for Elektorproject 180662.
+
+    Firmware for Elektorproject 180662 is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Foobar is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Firmware for Elektorproject 180662.  If not, see <https://www.gnu.org/licenses/>.
+
+*/
+
 
 /* 
  * Hardware used: 
@@ -6,7 +24,9 @@
  *  GPS Receiver ( https://www.elektor.com/open-smart-gps-serial-gps-module-for-arduino-apm2-5-flight-control )
  *  DS3231 bases I²C RTC Module, e.g those used for the Pi
  * 
- * 
+ *  License used: GPLv3 
+ *
+ *
  * Librarys requierd:
  *  
  *  U8G2 by oliver
@@ -26,6 +46,7 @@
  *  - Added static ip config
  *  
  */
+ 
 
 #include <WiFi.h>
 #include <WiFiClient.h>
