@@ -157,6 +157,10 @@
                          <fieldset>
                           <legend>GPS Settings</legend>
                             <input type="checkbox" id="GPS_SYNC_ON" name="GPS_SYNC_ON" value="0" >Sync to GPS <br>
+                            <input style="width:60px" type="number" id="GPS_ROLLLOVERCNT" name="gps_rollover_count" min="0" max="10" value="0"> GPS Weekrollover Count</br>
+                         <!--   <input style="width:60px" type="number" id="GPS_BAUDRATE" name="gps_baudrate" min="0" max="115200" value="0"> GPS Weekrollover Count</br> -->
+                            
+
                          
                          <button type="button" onclick="SubmitGPSsync(); return false;">Submit</button>
                          </fieldset>
@@ -759,6 +763,7 @@
             
             /* We need also to read if we sync on GPS */
             document.getElementById("GPS_SYNC_ON").checked = jsonObj.gps_sync;
+            document.getElementById("GPS_ROLLLOVERCNT").value = jsonObj.gps_rollovercnt;
             
         
         }
@@ -905,18 +910,21 @@
             var url = host + "/gps/syncclock.dat";
             
             var gpssync_ena=document.getElementById("GPS_SYNC_ON").checked;
-                      
-           
-            
+            var gps_rollover_offset = document.getElementById("GPS_ROLLLOVERCNT").value;
+            //var gps_baudrate = document.getElementById("GPS_BAUDRATE").value;
             
             var data = [];
             if(true===gpssync_ena){
             data.push({key:"GPS_SYNC_ON",
                        value: gpssync_ena});
             }
-                       
-            
-            
+
+            /*
+            data.push({key:"GPS_BAUD",
+                       value: gps_baudrate});                       
+            */
+            data.push({key:"GPS_ROLLOVERCNT",
+                       value: gps_rollover_offset});
             sendData(url,data); 
         
         

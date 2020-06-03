@@ -1,3 +1,20 @@
+/*
+    This file is part of Firmware for Elektorproject 180662.
+
+    Firmware for Elektorproject 180662 is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Foobar is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Firmware for Elektorproject 180662.  If not, see <https://www.gnu.org/licenses/>.
+
+*/
 #include <ArduinoJson.h>
 #include <WebServer.h>
 
@@ -47,6 +64,9 @@ String response="";
   uint32_t idx = timec.GetDLS_Offset();
   root["dlsmanidx"]=idx;
   root["gps_sync"]=gps_config.sync_on_gps;
+  //root["gps_baud"]=gps_config.baudrate;
+  root["gps_rollovercnt"]=gps_config.rollover_cnt;
+  
   serializeJson(root, response);
   sendData(response);
 }
@@ -336,13 +356,45 @@ DynamicJsonDocument  root(capacity);
 *    Remarks       : none
 **************************************************************************************************/
 void update_gps_syncclock( void ){
-  if( ! server->hasArg("GPS_SYNC_ON") || server->arg("GPS_SYNC_ON") == NULL ) { // If the POST request doesn't have username and password data
+  if( ! server->hasArg("GPS_SYNC_ON") || server->arg("GPS_SYNC_ON") == NULL ) { 
     /* we are missing something here */
     gps_config.sync_on_gps = false;
   } else {
     gps_config.sync_on_gps = true;
    /* Enable Sync on GPS */  
   }
+
+/*
+ if( ! server->hasArg("GPS_BAUD") || server->arg("GPS_BAUD") == NULL ) { 
+     gps_config.baudrate=gps_config.baudrate; 
+  } else {
+    int32_t br = server->arg("GPS_BAUD").toInt();
+    if(br>0){
+      gps_config.baudrate = br;
+    } else {
+      gps_config.baudrate=9600;
+    }
+  } 
+*/
+  if( ! server->hasArg("GPS_ROLLOVERCNT") || server->arg("GPS_ROLLOVERCNT") == NULL ) { 
+    /* we are missing something here */
+     gps_config.rollover_cnt = gps_config.rollover_cnt;
+  } else {
+    int32_t roc = server->arg("GPS_ROLLOVERCNT").toInt();
+    if(roc>=0){
+      
+      gps_config.rollover_cnt=roc;
+      Serial.printf("Set rollover coutn to %i\n\r", gps_config.rollover_cnt);
+    } else {
+      Serial.printf("Force rollover coutn to 0 \n\r");
+      gps_config.rollover_cnt=0;
+    }
+
+  
+  } 
+
+
+
   write_gps_config((gps_settings_t)(gps_config));
   server->send(200);   
 

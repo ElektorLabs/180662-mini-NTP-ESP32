@@ -31,11 +31,15 @@
  *  
  *  U8G2 by oliver
  *  Time by Michael Magolis
- *  Ticker by Bert Melis
  *  TinyGPS++ ( https://github.com/mikalhart/TinyGPSPlus )  
  *  RTCLib by Adafruit
  *  ArduinoJson 6.10.0
  *  CRC32 by Christopher Baker
+ *  
+ *  Version 1.3
+ *   Added Telnetserver to access raw gpsmodule datastream on port 23
+ *   Added first "quick" fix for modules that suffer from the week roolover
+ *  
  *  
  *  Version 1.2
  *  - Fixed a bug making the NTP server now usable with linusx and windows systems
@@ -73,6 +77,7 @@
 #define  GPSBAUD ( 9600 )
 
 #define MAX_SRV_CLIENTS ( 5 )
+
 /* For GPS Module Debug */
 WiFiServer TelnetServer(23);
 WiFiClient serverClients[MAX_SRV_CLIENTS];
@@ -120,6 +125,9 @@ gps_settings_t gps_config;
 void Display_Task( void* param );
 uint32_t RTC_ReadUnixTimeStamp(bool* delayed_result);
 void RTC_WriteUnixTimestamp( uint32_t ts);
+
+
+
 
 /**************************************************************************************************
  *    Function      : GetUTCTime
@@ -433,13 +441,13 @@ void TelenetDebugServerTx( int16_t Data ){
  **************************************************************************************************/
 void loop()
 {  
+ 
   /* Process all networkservices */
   NetworkTask();
   TelnetDebugService();
   /* timeupdate done here is here */
   while (hws.available()){
       int16_t Data = hws.read();
-      TelenetDebugServerTx(Data);
       gps.encode(Data);
       /* We check here if we have a new timestamp, and a valid GPS position  */
       if( (gps.date.isValid()==true) && ( gps.time.isValid()==true) && ( gps.location.isValid() == true ) ) {
@@ -460,17 +468,31 @@ void loop()
           newtime.hour=gps.time.hour();
           newtime.minute=gps.time.minute();
           newtime.second=gps.time.second();
+          
+          // Added by T. Godau DL9SEC 30.05.2020 
+          // Fix for older GPS with the week number rollover problem (see https://en.wikipedia.org/wiki/GPS_Week_Number_Rollover)
+          uint32_t newtimestamp= timec.TimeStructToTimeStamp(newtime);
+
+          if(gps_config.rollover_cnt>0){
+
+           newtimestamp + (  SECS_PER_WEEK * 1024 *gps_config.rollover_cnt );
+          
+          }
+          
           /* We print the time for debug */
           if( (true == gps_config.sync_on_gps) && (GPS_Timeout<=0) ){
             Serial.println("Update Time from GPS");
             Serial.printf("Date is: %i/%i/%i at %i:%i:%i \r\n",newtime.year,newtime.month,newtime.day,newtime.hour,newtime.minute,newtime.second);
-            timec.SetUTC(newtime,GPS_CLOCK);
+            //This function is overloaded and takes timestamps as time_t structs
+            timec.SetUTC(newtimestamp,GPS_CLOCK);
             GPS_Timeout= 600; //10 Minute timeout
           } else {
             // Do nothing           
           }
       } 
-    }      
+    }
+    TelenetDebugServerTx(Data);
+
   }
 }
 
