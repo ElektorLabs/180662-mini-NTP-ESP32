@@ -51,4 +51,4 @@ The software is written using the arduino framwork for the ESP32. Also you need 
 | GPIO15    | UART TX       |
 | GPIO25    | PPS Interrupt |
 
-For more inforamtion have a look at: https://www.elektormagazine.com/labs/admin-preview/mini-ntp-server-with-gps
+For more inforamtion have a look at: https://www.elektormagazine.com/labs/mini-ntp-server-with-gps

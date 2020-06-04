@@ -36,9 +36,15 @@
  *  ArduinoJson 6.10.0
  *  CRC32 by Christopher Baker
  *  
+ *  Version 1.4
+ *   - Added fix for gps modules that suffer from the week roolover
+ *     this can now be corrected from the webinterface
+ *   - Dependency of external Ticker library removed from requiered librarys
+ *     The library is now paert of the ESP32 Arduino framwork 
+ *   - Code is prepare for GPS Baudratesettings
+ *
  *  Version 1.3
  *   Added Telnetserver to access raw gpsmodule datastream on port 23
- *   Added first "quick" fix for modules that suffer from the week roolover
  *  
  *  
  *  Version 1.2
@@ -475,7 +481,7 @@ void loop()
 
           if(gps_config.rollover_cnt>0){
 
-           newtimestamp + (  SECS_PER_WEEK * 1024 *gps_config.rollover_cnt );
+           newtimestamp += (  SECS_PER_WEEK * 1024 *gps_config.rollover_cnt );
           
           }
           
