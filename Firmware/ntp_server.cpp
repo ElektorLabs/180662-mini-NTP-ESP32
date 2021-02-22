@@ -4,6 +4,9 @@
 #include <lwip/def.h>
 
 #define NTP_TIMESTAMP_DELTA  2208988800ull
+
+//this will try to get ms since PPS
+
 typedef struct{
     uint8_t mode:3;               // mode. Three bits. Client will pick mode 3 for client.
     uint8_t vn:3;                 // vn.   Three bits. Version number of the protocol.
@@ -47,6 +50,7 @@ uint8_t __calloverhead = 0;
 
 AsyncUDP udp;
 uint32_t(*fnc_read_utc)(void) = NULL;
+uint32_t(*fnc_read_subsecond)(void) = NULL;
 
 NTP_Server::NTP_Server( ){
     
@@ -61,10 +65,12 @@ NTP_Server::~NTP_Server(){
 uint8_t DeterminePrecision( void ){
     /* We need to compute the call overhead */
     uint32_t utc_read=0;
+    uint32_t mil_read=0;
     if(fnc_read_utc!=NULL){
       uint32_t start = micros();
       for(uint32_t i=0;i<1024;i++){
         utc_read=fnc_read_utc();
+        mil_read=fnc_read_subsecond();
       }
       uint32_t end=micros();
       double runtime = ( ((double)(end)-(double)(start) ) / ( (double)(1000000.0) * (double)(1024) ) )+((double)(1)) ; // One second as we don't keep track on the fractions
@@ -75,12 +81,12 @@ uint8_t DeterminePrecision( void ){
       /* this is a bad one ! */
       configASSERT( fnc_read_utc != NULL );
     }
-
+  return 0;
 
     
 }
 
-bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) ){
+bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) , uint32_t(*fnc_get_subsecond)(void) ){
     bool started=false;
     fnc_read_utc = fnc_getutc_time;
   
@@ -88,6 +94,7 @@ bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) ){
         started=true;
          udp.onPacket([](AsyncUDPPacket packet) {
            uint32_t processing_start = 0;
+           uint32_t millisec = fnc_read_subsecond();
            ntp_packet_t ntp_req;
            
            if(fnc_read_utc!=NULL){
@@ -103,7 +110,7 @@ bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) ){
            memcpy(&ntp_req, packet.data(), sizeof(ntp_packet_t));
            
            /* Next is to swap the data arround */
-
+  
           ntp_req.rootDelay = ntohl( ntp_req.rootDelay );    
           ntp_req.rootDispersion = ntohl( ntp_req.rootDispersion );
           ntp_req.refId.data = ntohl( ntp_req.refId.data );        
@@ -152,9 +159,11 @@ bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) ){
           ntp_req.origTm_f = htonl( ntp_req.origTm_f );      
         
           ntp_req.rxTm_s = htonl( ntp_req.rxTm_s );        
-          ntp_req.rxTm_f = htonl( ntp_req.rxTm_f );       
-        
-          ntp_req.txTm_s = htonl( ntp_req.txTm_s );        
+          //ntp_req.rxTm_f = htonl( ntp_req.rxTm_f );       
+          //ntp_req.txTm_s = htonl( ntp_req.txTm_s ); 
+          ntp_req.rxTm_f = htonl(millisec * 4294967);  
+          ntp_req.txTm_f = htonl(millisec * 4294967);
+
           ntp_req.txTm_f = htonl( ntp_req.txTm_f );   
 
           packet.write((uint8_t*)&ntp_req, sizeof(ntp_packet_t));

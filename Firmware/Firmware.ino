@@ -36,6 +36,12 @@
  *  ArduinoJson 6.10.0
  *  CRC32 by Christopher Baker
  *  
+ *  Version 1.5
+ *  - improved accuacy
+ *  - addes sub seconds patch by W2UA
+ *  - fixed missing return in ntp_server.cpp
+ *  - fixed implicied conversation in Firmware.ino
+ *  
  *  Version 1.4
  *   - Added fix for gps modules that suffer from the week roolover
  *     this can now be corrected from the webinterface
@@ -90,7 +96,8 @@ WiFiClient serverClients[MAX_SRV_CLIENTS];
 
 Timecore timec;
 
-
+hw_timer_t * timer = NULL;
+uint32_t millisec;
 
 
 
@@ -157,7 +164,33 @@ void IRAM_ATTR handlePPSInterrupt() {
  timec.RTC_Tick();
  decGPSTimeout();
  pps_active = true; 
+ //This needs to ne atomic
+ millisec = 0; //The problem is that we may be interrupte by the subsecond ISR
  xSemaphoreGiveFromISR( xSemaphore, NULL );       
+}
+
+/**************************************************************************************************
+ *    Function      : handleS
+ *    Description   : Interrupt from internal Timer to get subseconds
+ *    Input         : none 
+ *    Output        : none
+ *    Remarks       : needs to be placed in RAM ans is only allowed to call functions also in RAM
+ **************************************************************************************************/
+void IRAM_ATTR handleSubSecondInterrupt(){
+  if(millisec<999){
+    millisec++; //We coudl to some overhead and use a counting semaphore 
+  }
+}
+
+/**************************************************************************************************
+ *    Function      : GetSubsecond
+ *    Description   : Return the subseconds
+ *    Input         : none 
+ *    Output        : uint32_t 
+ *    Remarks       : return 0 to 999
+ **************************************************************************************************/
+uint32_t GetSubsecond( void ){
+  return millisec;
 }
 
 /**************************************************************************************************
@@ -252,7 +285,7 @@ void setup()
   }
   
   /* Last step is to get the NTP running */
-  NTPServer.begin(123 , GetUTCTime );
+  NTPServer.begin(123 , GetUTCTime, GetSubsecond );
   /* Now we start with the config for the Timekeeping and sync */
   TimeKeeper.attach_ms(200, _200mSecondTick);
 
@@ -265,6 +298,11 @@ void setup()
   if (hws.available() > 0) {
                 byte incomingByte = hws.read();
   }
+
+  timer = timerBegin(0, 80, true);
+  timerAttachInterrupt(timer, &handleSubSecondInterrupt, true);
+  timerAlarmWrite(timer, 1000, true);
+  timerAlarmEnable(timer);
   
 }
 
@@ -683,7 +721,7 @@ void Display_Task( void* param ){
  *    Remarks       : Requiered to do some conversation
  **************************************************************************************************/
 uint32_t RTC_ReadUnixTimeStamp(bool* delayed_result){
-  DateTime now = 0;
+  DateTime now =  time(0);
   if( true == xSemaphoreTake(xi2cmtx,(100 / portTICK_PERIOD_MS) ) ){
    now = rtc_clock.now();
    xSemaphoreGive(xi2cmtx);
