@@ -36,6 +36,12 @@
  *  ArduinoJson 6.10.0
  *  CRC32 by Christopher Baker
  *  
+ * *  Version 1.6
+ *  - Fixed NULL pointer used for a function call
+ *  - Moved project to Platform.IO
+ *  - Dependencies handeled by PlatformIO
+ *  - ESP32-C3 preperation started
+ * 
  *  Version 1.5
  *  - improved accuacy
  *  - addes sub seconds patch by W2UA
@@ -256,12 +262,16 @@ void setup()
   /* We reassign the I2C Pins to 4 and 5 with 100kHz */
   Wire.begin(5,4,100000);
 
+
   /* This will check if the RTC is on the I2C */
   Wire.beginTransmission(0x68);
   if(Wire.endTransmission() == 0 ){
 
     /* Clock is found */
-    Serial.print(F("I2C RTC at 0x68 found"));
+    Serial.println(F("I2C RTC at 0x68 found"));
+    /* We need to initalize the rtc_clock */
+    rtc_clock.begin(&Wire);
+
     /* We now register the clock in the time core component */
     rtc_source_t I2C_DS3231;
 
