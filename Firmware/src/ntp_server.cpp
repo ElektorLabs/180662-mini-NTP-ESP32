@@ -1,6 +1,5 @@
 #include "Arduino.h"
 #include "ntp_server.h"
-#include "AsyncUDP.h"
 #include <lwip/def.h>
 
 #define NTP_TIMESTAMP_DELTA  2208988800ull
@@ -89,14 +88,42 @@ uint8_t DeterminePrecision( void ){
 bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) , uint32_t(*fnc_get_subsecond)(void) ){
     bool started=false;
     fnc_read_utc = fnc_getutc_time;
-  
+    fnc_read_subsecond = fnc_get_subsecond;
     if(udp.listen(port)) {
         started=true;
-         udp.onPacket([](AsyncUDPPacket packet) {
+        udp.onPacket(NTP_Server::processUDPPacket);
+        /* udp.onPacket([](AsyncUDPPacket packet) {
+            Serial.print("UDP Packet Type: ");
+            Serial.print(packet.isBroadcast()?"Broadcast":packet.isMulticast()?"Multicast":"Unicast");
+            Serial.print(", From: ");
+            Serial.print(packet.remoteIP());
+            Serial.print(":");
+            Serial.print(packet.remotePort());
+            Serial.print(", To: ");
+            Serial.print(packet.localIP());
+            Serial.print(":");
+            Serial.print(packet.localPort());
+            Serial.print(", Length: ");
+            Serial.print(packet.length());
+            Serial.print(", Data: ");
+            Serial.write(packet.data(), packet.length());
+            Serial.println();
+        }); */
+      }
+return started;
+}
+
+/* static function */
+void NTP_Server::processUDPPacket(AsyncUDPPacket& packet) {
            uint32_t processing_start = 0;
-           uint32_t millisec = fnc_read_subsecond();
+           uint32_t millisec = 0;
            ntp_packet_t ntp_req;
            
+          if(NULL != fnc_read_subsecond){
+              millisec = fnc_read_subsecond();
+          }
+           
+
            if(fnc_read_utc!=NULL){
               processing_start=fnc_read_utc()+NTP_TIMESTAMP_DELTA;
            } else {
@@ -169,7 +196,4 @@ bool NTP_Server::begin(uint16_t port , uint32_t(*fnc_getutc_time)(void) , uint32
           packet.write((uint8_t*)&ntp_req, sizeof(ntp_packet_t));
         
             
-        });
-      }
-return started;
-}
+        }
