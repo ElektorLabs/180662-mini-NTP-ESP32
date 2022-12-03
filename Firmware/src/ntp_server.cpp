@@ -187,7 +187,7 @@ void NTP_Server::processUDPPacket(AsyncUDPPacket& packet) {
         
           ntp_req.rxTm_s = htonl( ntp_req.rxTm_s );        
           //ntp_req.rxTm_f = htonl( ntp_req.rxTm_f );       
-          //ntp_req.txTm_s = htonl( ntp_req.txTm_s ); 
+          ntp_req.txTm_s = htonl( ntp_req.txTm_s ); 
           ntp_req.rxTm_f = htonl(millisec * 4294967);  
           ntp_req.txTm_f = htonl(millisec * 4294967);
 
