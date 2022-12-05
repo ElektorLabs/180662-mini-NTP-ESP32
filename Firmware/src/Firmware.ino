@@ -683,7 +683,7 @@ void Display_Task( void* param ){
         oled_ptr->drawStr(0,8,gps_lat_str);
         oled_ptr->drawStr(0,16,gps_lng_str);
         oled_ptr->setFont(u8g2_font_open_iconic_all_2x_t);
-        oled_ptr->drawGlyph(16,112,209);
+        oled_ptr->drawGlyph(112,16,209);
       } else {
          oled_ptr->setFont(u8g2_font_amstrad_cpc_extended_8f );
          oled_ptr->drawStr(24,16,"No GPS Fix");
