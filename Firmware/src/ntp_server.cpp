@@ -24,10 +24,10 @@ typedef struct
   ntp_flags_t flags;
   uint8_t stratum;         // Eight bits. Stratum level of the local clock.
   uint8_t poll;            // Eight bits. Maximum interval between successive messages.
-  uint8_t precision;       // Eight bits. Precision of the local clock.
+  int8_t  precision;       // Eight bits signed. Precision of the local clock.
 
   uint32_t rootDelay;      // 32 bits. Total round trip delay time.
-  uint32_t rootDispersion; // 32 bits. Max error aloud from primary clock source.
+  uint32_t rootDispersion; // 32 bits. Max error allowed from primary clock source.
   refID_t refId;           // 32 bits. Reference clock identifier.
    
 
